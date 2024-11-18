@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviador de Mensagens WhatsApp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        /* Centralized CSS */
+        body {
+            background-color: #f7fafc;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 40rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: medium;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #3182ce;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-gray-500 {
+            color: #6b7280;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            background-color: #3182ce;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #2b6cb0;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            display: none;
+        }
+
+        .status-info {
+            background-color: #ebf8ff;
+            color: #3182ce;
+        }
+
+        .status-success {
+            background-color: #f0fff4;
+            color: #48bb78;
+        }
+
+        .status-error {
+            background-color: #fff5f5;
+            color: #e53e3e;
+        }
+
+        .progress {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #edf2f7;
+            height: 0.5rem;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: #3182ce;
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        .number-count {
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-2xl">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">Enviar Mensagem para WhatsApp</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Seção de Números de Telefone -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Importar Números de Telefone</label>
+                    <input
+                        type="file"
+                        id="fileInput"
+                        accept=".csv,.txt"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    <p class="mt-1 text-sm text-gray-500">Carregue um arquivo .csv ou .txt (um número por linha)</p>
+                </div>
+
+                <div>
+                    <label for="phoneList" class="block text-sm font-medium text-gray-700 mb-1">Números de Telefone</label>
+                    <textarea
+                        id="phoneList"
+                        rows="8"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Digite os números de telefone manualmente&#10;Um número por linha&#10;Ou importe de um arquivo"
+                    ></textarea>
+                </div>
+
+                <div class="text-sm text-gray-600">
+                    Total de números: <span id="numberCount">0</span>
+                </div>
+            </div>
+
+            <!-- Seção do Formulário de Mensagem -->
+            <div class="space-y-4">
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
+                    <textarea
+                        id="message"
+                        name="message"
+                        rows="8"
+                        placeholder="Digite sua mensagem"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    ></textarea>
+                </div>
+
+                <button
+                    id="sendButton"
+                    type="button"
+                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    disabled
+                >
+                    Enviar Mensagens
+                </button>
+
+                <div id="progress" class="hidden">
+                    <div class="text-sm text-gray-600 mb-1">
+                        Progresso: <span id="progressCount">0</span>/<span id="totalCount">0</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="status" class="mt-4 p-3 rounded-md hidden"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const phoneList = document.getElementById('phoneList');
+        const numberCount = document.getElementById('numberCount');
+        const message = document.getElementById('message');
+        const sendButton = document.getElementById('sendButton');
+        const status = document.getElementById('status');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
+        const progressCount = document.getElementById('progressCount');
+        const totalCount = document.getElementById('totalCount');
+
+        // Manipulador de entrada de arquivo
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                // Divide por linha e remove linhas vazias
+                const numbers = text.split(/\r?\n/).filter(line => line.trim());
+                phoneList.value = numbers.join('\n');
+                updateNumberCount();
+            } catch (error) {
+                showStatus('Erro ao ler o arquivo', 'error');
+            }
+        });
+
+        // Atualiza a contagem de números quando a lista de telefones muda
+        phoneList.addEventListener('input', updateNumberCount);
+
+        // Habilita/desabilita o botão de envio com base nas entradas
+        [phoneList, message].forEach(el => {
+            el.addEventListener('input', () => {
+                sendButton.disabled = !phoneList.value.trim() || !message.value.trim();
+            });
+        });
+
+        function updateNumberCount() {
+            const numbers = phoneList.value.split('\n').filter(line => line.trim());
+            numberCount.textContent = numbers.length;
+            sendButton.disabled = numbers.length === 0 || !message.value.trim();
+        }
+
+        function showStatus(text, type = 'info') {
+            status.textContent = text;
+            status.className = 'mt-4 p-3 rounded-md';
+            status.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'bg-blue-100');
+            status.classList.add({
+                info: 'bg-blue-100',
+                success: 'bg-green-100',
+                error: 'bg-red-100'
+            }[type]);
+        }
+
+        function updateProgress(current, total) {
+            progress.classList.remove('hidden');
+            progressCount.textContent = current;
+            totalCount.textContent = total;
+            const percentage = (current / total) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        sendButton.addEventListener('click', async () => {
+            const numbers = phoneList.value.split('\n').filter(line => line.trim());
+            const messageText = message.value.trim();
+
+            if (numbers.length === 0 || !messageText) {
+                showStatus('Por favor, insira números de telefone e mensagem', 'error');
+                return;
+            }
+
+            sendButton.disabled = true;
+            let successCount = 0;
+
+            for (let i = 0; i < numbers.length; i++) {
+                const phone = numbers[i].trim();
+                updateProgress(i, numbers.length);
+
+                try {
+                    const response = await fetch('/send-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone, message: messageText })
+                    });
+
+                    if (response.ok) {
+                        successCount++;
+                    }
+                } catch (error) {
+                    console.error(`Falha ao enviar para ${phone}:`, error);
+                }
+
+                // Pequeno atraso para não sobrecarregar o servidor
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            updateProgress(numbers.length, numbers.length);
+            showStatus(`Enviadas ${successCount} de ${numbers.length} mensagens com sucesso`,
+                      successCount === numbers.length ? 'success' : 'info');
+            sendButton.disabled = false;
+        });
+    </script>
+</body>
+</html>
